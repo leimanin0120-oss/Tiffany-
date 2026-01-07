@@ -95,6 +95,8 @@
         .buttons {
             display: flex;
             gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
         
         button {
@@ -133,6 +135,28 @@
         #resetBtn:hover {
             background-color: #d32f2f;
         }
+        
+        .difficulty-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        
+        .difficulty-btn {
+            background-color: #222;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+        
+        .difficulty-btn.active {
+            background-color: #4CAF50;
+        }
+        
+        .difficulty-btn.easy { border-left: 4px solid #4CAF50; }
+        .difficulty-btn.medium { border-left: 4px solid #FF9800; }
+        .difficulty-btn.hard { border-left: 4px solid #F44336; }
+        .difficulty-btn.expert { border-left: 4px solid #9C27B0; }
         
         .instructions {
             background-color: #111;
@@ -222,6 +246,10 @@
             .mobile-controls {
                 display: grid;
             }
+            
+            .difficulty-buttons {
+                flex-wrap: wrap;
+            }
         }
         
         @media (max-width: 480px) {
@@ -238,7 +266,7 @@
 <body>
     <div class="header">
         <h1>黑色貪食蛇</h1>
-        <p class="subtitle">吃到紅色蘋果會讓蛇變長！</p>
+        <p class="subtitle">吃到紅色蘋果會讓蛇變長！挑戰你的最高分數！</p>
     </div>
     
     <div class="game-container">
@@ -246,6 +274,10 @@
             <div class="info-box">
                 <div class="info-label">分數</div>
                 <div id="score" class="info-value">0</div>
+            </div>
+            <div class="info-box">
+                <div class="info-label">最高分</div>
+                <div id="highScore" class="info-value">0</div>
             </div>
             <div class="info-box">
                 <div class="info-label">長度</div>
@@ -260,6 +292,13 @@
         <canvas id="gameCanvas" width="600" height="600"></canvas>
         
         <div class="controls">
+            <div class="difficulty-buttons">
+                <button class="difficulty-btn easy active" data-level="easy">簡單</button>
+                <button class="difficulty-btn medium" data-level="medium">中等</button>
+                <button class="difficulty-btn hard" data-level="hard">困難</button>
+                <button class="difficulty-btn expert" data-level="expert">專家</button>
+            </div>
+            
             <div class="buttons">
                 <button id="startBtn">開始遊戲</button>
                 <button id="resetBtn">重新開始</button>
@@ -281,6 +320,8 @@
                 <li>吃到紅色蘋果可以增加分數並讓蛇變長</li>
                 <li>避免撞到牆壁或自己的身體</li>
                 <li>遊戲會隨著分數增加而加快速度</li>
+                <li>不同難度有不同的初始速度和加速規則</li>
+                <li>最高分數會儲存在瀏覽器中</li>
             </ul>
         </div>
     </div>
@@ -290,31 +331,104 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const scoreElement = document.getElementById('score');
+        const highScoreElement = document.getElementById('highScore');
         const lengthElement = document.getElementById('length');
         const statusElement = document.getElementById('status');
         const startBtn = document.getElementById('startBtn');
         const resetBtn = document.getElementById('resetBtn');
+        const difficultyButtons = document.querySelectorAll('.difficulty-btn');
         
         // 遊戲參數
         const gridSize = 20;
         const gridWidth = canvas.width / gridSize;
         const gridHeight = canvas.height / gridSize;
         
+        // 難度設定
+        const difficultySettings = {
+            easy: {
+                name: '簡單',
+                initialSpeed: 180,
+                speedDecrement: 5, // 每得分減少的速度
+                minSpeed: 80,
+                color: '#4CAF50'
+            },
+            medium: {
+                name: '中等',
+                initialSpeed: 150,
+                speedDecrement: 8,
+                minSpeed: 60,
+                color: '#FF9800'
+            },
+            hard: {
+                name: '困難',
+                initialSpeed: 120,
+                speedDecrement: 10,
+                minSpeed: 40,
+                color: '#F44336'
+            },
+            expert: {
+                name: '專家',
+                initialSpeed: 90,
+                speedDecrement: 12,
+                minSpeed: 20,
+                color: '#9C27B0'
+            }
+        };
+        
         let snake = [];
         let food = {};
         let direction = 'right';
         let nextDirection = 'right';
-        let gameSpeed = 150; // 毫秒
         let gameRunning = false;
         let gameLoop;
         let score = 0;
         let snakeLength = 3;
+        let currentDifficulty = 'easy';
+        let gameSpeed = difficultySettings[currentDifficulty].initialSpeed;
+        
+        // 最高分數管理
+        let highScores = {
+            easy: 0,
+            medium: 0,
+            hard: 0,
+            expert: 0
+        };
         
         // 移動設備控制按鈕
         const upBtn = document.querySelector('.up-btn');
         const downBtn = document.querySelector('.down-btn');
         const leftBtn = document.querySelector('.left-btn');
         const rightBtn = document.querySelector('.right-btn');
+        
+        // 載入最高分數
+        function loadHighScores() {
+            const savedScores = localStorage.getItem('snakeHighScores');
+            if (savedScores) {
+                highScores = JSON.parse(savedScores);
+            }
+            updateHighScoreDisplay();
+        }
+        
+        // 儲存最高分數
+        function saveHighScores() {
+            localStorage.setItem('snakeHighScores', JSON.stringify(highScores));
+        }
+        
+        // 更新最高分數顯示
+        function updateHighScoreDisplay() {
+            highScoreElement.textContent = highScores[currentDifficulty];
+        }
+        
+        // 檢查並更新最高分數
+        function checkAndUpdateHighScore() {
+            if (score > highScores[currentDifficulty]) {
+                highScores[currentDifficulty] = score;
+                saveHighScores();
+                updateHighScoreDisplay();
+                return true;
+            }
+            return false;
+        }
         
         // 初始化遊戲
         function initGame() {
@@ -332,7 +446,7 @@
             nextDirection = 'right';
             score = 0;
             snakeLength = 3;
-            gameSpeed = 150;
+            gameSpeed = difficultySettings[currentDifficulty].initialSpeed;
             
             // 更新顯示
             updateDisplay();
@@ -392,11 +506,16 @@
             snake.forEach((segment, index) => {
                 // 蛇頭用不同顏色
                 if (index === 0) {
-                    ctx.fillStyle = '#4CAF50'; // 蛇頭顏色
+                    ctx.fillStyle = difficultySettings[currentDifficulty].color; // 根據難度使用不同顏色
                 } else {
-                    // 蛇身體用漸變綠色
+                    // 蛇身體用漸變顏色
                     const colorValue = Math.max(100, 255 - index * 5);
-                    ctx.fillStyle = `rgb(76, ${colorValue}, 80)`;
+                    const color = difficultySettings[currentDifficulty].color;
+                    // 將十六進位顏色轉換為RGB
+                    const r = parseInt(color.slice(1, 3), 16);
+                    const g = parseInt(color.slice(3, 5), 16);
+                    const b = parseInt(color.slice(5, 7), 16);
+                    ctx.fillStyle = `rgb(${r}, ${Math.min(g + colorValue, 255)}, ${b})`;
                 }
                 
                 // 繪製圓角矩形讓蛇看起來更平滑
@@ -458,6 +577,13 @@
             // 繪製蘋果莖
             ctx.fillStyle = '#8b4513';
             ctx.fillRect(foodX + gridSize/2 - 1, foodY - 1, 2, 5);
+            
+            // 繪製難度指示
+            ctx.fillStyle = difficultySettings[currentDifficulty].color;
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            ctx.fillText(`難度: ${difficultySettings[currentDifficulty].name}`, 10, 10);
         }
         
         // 繪製圓角矩形輔助函數
@@ -522,9 +648,15 @@
                 score += 10;
                 snakeLength++;
                 
-                // 每得50分增加速度
-                if (score % 50 === 0) {
-                    gameSpeed = Math.max(50, gameSpeed - 10);
+                // 根據難度設定增加速度
+                const setting = difficultySettings[currentDifficulty];
+                if (score % 30 === 0) {
+                    gameSpeed = Math.max(setting.minSpeed, gameSpeed - setting.speedDecrement);
+                    // 更新遊戲循環速度
+                    if (gameRunning) {
+                        clearInterval(gameLoop);
+                        gameLoop = setInterval(gameStep, gameSpeed);
+                    }
                 }
                 
                 // 生成新食物
@@ -592,6 +724,9 @@
             statusElement.textContent = '遊戲結束';
             startBtn.textContent = '重新開始';
             
+            // 檢查是否打破紀錄
+            const newRecord = checkAndUpdateHighScore();
+            
             // 顯示遊戲結束訊息
             ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -600,17 +735,57 @@
             ctx.font = 'bold 40px Arial';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText('遊戲結束', canvas.width / 2, canvas.height / 2 - 30);
+            ctx.fillText('遊戲結束', canvas.width / 2, canvas.height / 2 - 60);
             
             ctx.fillStyle = '#fff';
             ctx.font = 'bold 24px Arial';
-            ctx.fillText(`最終分數: ${score}`, canvas.width / 2, canvas.height / 2 + 20);
+            ctx.fillText(`最終分數: ${score}`, canvas.width / 2, canvas.height / 2 - 20);
+            
+            if (newRecord) {
+                ctx.fillStyle = '#FFD700';
+                ctx.font = 'bold 28px Arial';
+                ctx.fillText('🎉 新紀錄！ 🎉', canvas.width / 2, canvas.height / 2 + 20);
+            }
+            
+            ctx.fillStyle = '#aaa';
+            ctx.font = '18px Arial';
+            ctx.fillText(`難度: ${difficultySettings[currentDifficulty].name}`, canvas.width / 2, canvas.height / 2 + 60);
+            ctx.fillText(`最高分: ${highScores[currentDifficulty]}`, canvas.width / 2, canvas.height / 2 + 90);
         }
         
         // 更新顯示
         function updateDisplay() {
             scoreElement.textContent = score;
             lengthElement.textContent = snakeLength;
+        }
+        
+        // 切換難度
+        function setDifficulty(level) {
+            // 更新按鈕狀態
+            difficultyButtons.forEach(btn => {
+                if (btn.dataset.level === level) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // 更新當前難度
+            currentDifficulty = level;
+            
+            // 更新遊戲速度
+            gameSpeed = difficultySettings[level].initialSpeed;
+            
+            // 更新最高分顯示
+            updateHighScoreDisplay();
+            
+            // 如果遊戲正在運行，重設遊戲
+            if (gameRunning) {
+                resetGame();
+            } else {
+                // 重新繪製以顯示新顏色
+                draw();
+            }
         }
         
         // 鍵盤控制
@@ -643,6 +818,13 @@
         startBtn.addEventListener('click', startGame);
         resetBtn.addEventListener('click', resetGame);
         
+        // 難度按鈕事件監聽
+        difficultyButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                setDifficulty(btn.dataset.level);
+            });
+        });
+        
         // 移動設備控制
         upBtn.addEventListener('click', () => { if (direction !== 'down') nextDirection = 'up'; });
         downBtn.addEventListener('click', () => { if (direction !== 'up') nextDirection = 'down'; });
@@ -650,12 +832,12 @@
         rightBtn.addEventListener('click', () => { if (direction !== 'left') nextDirection = 'right'; });
         
         // 初始化遊戲
+        loadHighScores();
         initGame();
         
         // 適應視窗大小
         window.addEventListener('resize', () => {
             // 保持Canvas大小不變，但可以根據需要調整
-            // 這裡我們保持固定大小
         });
     </script>
 </body>
