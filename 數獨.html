@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML5數獨小遊戲</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+        }
+        
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #333;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+        
+        .game-area {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 30px;
+        }
+        
+        .sudoku-container {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .sudoku-grid {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            grid-template-rows: repeat(9, 1fr);
+            gap: 0;
+            border: 3px solid #2c3e50;
+            width: 100%;
+            max-width: 450px;
+            margin: 0 auto;
+            background-color: white;
+        }
+        
+        .sudoku-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            height: 50px;
+            border: 1px solid #bdc3c7;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .sudoku-cell:nth-child(3n) {
+            border-right: 2px solid #2c3e50;
+        }
+        
+        .sudoku-cell:nth-child(9n) {
+            border-right: 1px solid #bdc3c7;
+        }
+        
+        .sudoku-cell:nth-child(n+19):nth-child(-n+27),
+        .sudoku-cell:nth-child(n+46):nth-child(-n+54) {
+            border-bottom: 2px solid #2c3e50;
+        }
+        
+        .sudoku-cell.selected {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .sudoku-cell.fixed {
+            color: #2c3e50;
+            background-color: #f8f9fa;
+        }
+        
+        .sudoku-cell.user-input {
+            color: #e74c3c;
+        }
+        
+        .sudoku-cell.error {
+            background-color: #ffcccc;
+        }
+        
+        .sudoku-cell.highlight {
+            background-color: #d6eaf8;
+        }
+        
+        .controls {
+            flex: 1;
+            min-width: 250px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .difficulty-selector, .game-controls, .number-selector {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 8px;
+        }
+        
+        .difficulty-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+            min-width: 100px;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button.primary {
+            background-color: #2ecc71;
+        }
+        
+        button.primary:hover {
+            background-color: #27ae60;
+        }
+        
+        button.secondary {
+            background-color: #e74c3c;
+        }
+        
+        button.secondary:hover {
+            background-color: #c0392b;
+        }
+        
+        button.warning {
+            background-color: #f39c12;
+        }
+        
+        button.warning:hover {
+            background-color: #d68910;
+        }
+        
+        .game-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .number-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        
+        .number-buttons button {
+            font-size: 1.3rem;
+            min-width: auto;
+            padding: 15px 5px;
+        }
+        
+        .number-buttons button.clear {
+            grid-column: span 3;
+            background-color: #95a5a6;
+        }
+        
+        .number-buttons button.clear:hover {
+            background-color: #7f8c8d;
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .timer, .mistakes {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .mistakes {
+            color: #e74c3c;
+        }
+        
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        @media (max-width: 768px) {
+            .game-area {
+                flex-direction: column;
+            }
+            
+            .sudoku-container {
+                width: 100%;
+            }
+            
+            .sudoku-cell {
+                height: 40px;
+                font-size: 1.2rem;
+            }
+            
+            .controls {
+                width: 100%;
+            }
+            
+            button {
+                min-width: 80px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .sudoku-cell {
+                height: 35px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>HTML5數獨小遊戲</h1>
+            <p class="subtitle">挑戰你的邏輯思維能力！填入數字使每行、每列和每個3x3宮格都包含1-9且不重複</p>
+        </header>
+        
+        <div class="game-area">
+            <div class="sudoku-container">
+                <div class="sudoku-grid" id="sudokuGrid">
+                    <!-- 數獨格子將由JavaScript生成 -->
+                </div>
+            </div>
+            
+            <div class="controls">
+                <div class="difficulty-selector">
+                    <h2>難度選擇</h2>
+                    <div class="difficulty-buttons">
+                        <button class="primary" id="easyBtn">簡單</button>
+                        <button class="primary" id="mediumBtn">中等</button>
+                        <button class="primary" id="hardBtn">困難</button>
+                    </div>
+                </div>
+                
+                <div class="game-controls">
+                    <h2>遊戲控制</h2>
+                    <button id="newGameBtn">新遊戲</button>
+                    <button id="hintBtn">提示</button>
+                    <button id="checkBtn">檢查答案</button>
+                    <button id="solveBtn" class="secondary">顯示解答</button>
+                </div>
+                
+                <div class="number-selector">
+                    <h2>數字選擇</h2>
+                    <div class="number-buttons">
+                        <button class="num-btn">1</button>
+                        <button class="num-btn">2</button>
+                        <button class="num-btn">3</button>
+                        <button class="num-btn">4</button>
+                        <button class="num-btn">5</button>
+                        <button class="num-btn">6</button>
+                        <button class="num-btn">7</button>
+                        <button class="num-btn">8</button>
+                        <button class="num-btn">9</button>
+                        <button class="clear" id="clearBtn">清除</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="game-info">
+            <div class="timer">時間: <span id="timer">00:00</span></div>
+            <div class="mistakes">錯誤: <span id="mistakes">0</span></div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>HTML5數獨小遊戲 &copy; 2023 | 使用HTML5, CSS3和JavaScript創建</p>
+    </footer>
+
+    <script>
+        // 數獨遊戲主邏輯
+        document.addEventListener('DOMContentLoaded', function() {
+            // 遊戲變數
+            let sudokuBoard = Array(9).fill().map(() => Array(9).fill(0));
+            let solutionBoard = Array(9).fill().map(() => Array(9).fill(0));
+            let initialBoard = Array(9).fill().map(() => Array(9).fill(0));
+            let selectedCell = null;
+            let mistakes = 0;
+            let timerInterval = null;
+            let seconds = 0;
+            let gameStarted = false;
+            let difficulty = 'medium'; // 預設難度
+            
+            // DOM元素
+            const sudokuGrid = document.getElementById('sudokuGrid');
+            const timerElement = document.getElementById('timer');
+            const mistakesElement = document.getElementById('mistakes');
+            const easyBtn = document.getElementById('easyBtn');
+            const mediumBtn = document.getElementById('mediumBtn');
+            const hardBtn = document.getElementById('hardBtn');
+            const newGameBtn = document.getElementById('newGameBtn');
+            const hintBtn = document.getElementById('hintBtn');
+            const checkBtn = document.getElementById('checkBtn');
+            const solveBtn = document.getElementById('solveBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const numButtons = document.querySelectorAll('.num-btn');
+            
+            // 初始化遊戲
+            function initGame() {
+                createSudokuGrid();
+                generateSudoku();
+                updateDisplay();
+                startTimer();
+            }
+            
+            // 創建數獨格子
+            function createSudokuGrid() {
+                sudokuGrid.innerHTML = '';
+                for (let row = 0; row < 9; row++) {
+                    for (let col = 0; col < 9; col++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'sudoku-cell';
+                        cell.dataset.row = row;
+                        cell.dataset.col = col;
+                        
+                        cell.addEventListener('click', () => selectCell(row, col));
+                        
+                        sudokuGrid.appendChild(cell);
+                    }
+                }
+            }
+            
+            // 選擇格子
+            function selectCell(row, col) {
+                // 取消之前選中的格子
+                if (selectedCell) {
+                    const prevCell = document.querySelector(
+                        `.sudoku-cell[data-row="${selectedCell.row}"][data-col="${selectedCell.col}"]`
+                    );
+                    prevCell.classList.remove('selected');
+                    
+                    // 移除高亮相關格子
+                    highlightRelatedCells(false);
+                }
+                
+                // 如果點擊已選中的格子，則取消選擇
+                if (selectedCell && selectedCell.row === row && selectedCell.col === col) {
+                    selectedCell = null;
+                    return;
+                }
+                
+                // 如果格子是固定的，不能選擇
+                if (initialBoard[row][col] !== 0) return;
+                
+                // 選擇新格子
+                selectedCell = { row, col };
+                const cell = document.querySelector(
+                    `.sudoku-cell[data-row="${row}"][data-col="${col}"]`
+                );
+                cell.classList.add('selected');
+                
+                // 高亮相關格子
+                highlightRelatedCells(true);
+            }
+            
+            // 高亮相關格子（行、列、3x3宮格）
+            function highlightRelatedCells(highlight) {
+                if (!selectedCell) return;
+                
+                const { row, col } = selectedCell;
+                
+                for (let r = 0; r < 9; r++) {
+                    for (let c = 0; c < 9; c++) {
+                        // 如果是同一行、同一列或同一3x3宮格
+                        if (r === row || c === col || 
+                            (Math.floor(r / 3) === Math.floor(row / 3) && 
+                             Math.floor(c / 3) === Math.floor(col / 3))) {
+                            const cell = document.querySelector(
+                                `.sudoku-cell[data-row="${r}"][data-col="${c}"]`
+                            );
+                            
+                            if (highlight) {
+                                cell.classList.add('highlight');
+                            } else {
+                                cell.classList.remove('highlight');
+                            }
+                        }
+                    }
+                }
+                
+                // 選中的格子不要有高亮背景
+                const selectedCellElement = document.querySelector(
+                    `.sudoku-cell[data-row="${row}"][data-col="${col}"]`
+                );
+                selectedCellElement.classList.remove('highlight');
+            }
+            
+            // 生成數獨題目
+            function generateSudoku() {
+                // 先創建一個完整的數獨解答
+                createSolutionBoard();
+                
+                // 複製解答到遊戲板
+                for (let row = 0; row < 9; row++) {
+                    for (let col = 0; col < 9; col++) {
+                        solutionBoard[row][col] = sudokuBoard[row][col];
+                    }
+                }
+                
+                // 根據難度挖空
+                let emptyCells;
+                switch(difficulty) {
+                    case 'easy':
+                        emptyCells = 30;
+                        break;
+                    case 'medium':
+                        emptyCells = 45;
+                        break;
+                    case 'hard':
+                        emptyCells = 55;
+                        break;
+                    default:
+                        emptyCells = 45;
+                }
+                
+                // 創建初始遊戲板（挖空）
+                for (let row = 0; row < 9; row++) {
+                    for (let col = 0; col < 9; col++) {
+                        initialBoard[row][col] = sudokuBoard[row][col];
+                    }
+                }
+                
+                // 隨機挖空
+                let cellsRemoved = 0;
+                while (cellsRemoved < emptyCells) {
+                    const row = Math.floor(Math.random() * 9);
+                    const col = Math.floor(Math.random() * 9);
+                    
+                    if (initialBoard[row][col] !== 0) {
+                        initialBoard[row][col] = 0;
+                        sudokuBoard[row][col] = 0;
+                        cellsRemoved++;
+                    }
+                }
+            }
+            
+            // 創建數獨解答
+            function createSolutionBoard() {
+                // 重置遊戲板
+                sudokuBoard = Array(9).fill().map(() => Array(9).fill(0));
+                
+                // 使用遞迴回溯算法生成數獨
+                solveSudoku(0, 0);
+            }
+            
+            // 遞迴回溯算法解決數獨
+            function solveSudoku(row, col) {
+                // 如果到達最後一行，表示已生成完整數獨
+                if (row === 9) return true;
+                
+                // 如果到達最後一列，移到下一行
+                if (col === 9) return solveSudoku(row + 1, 0);
+                
+                // 如果該格子已有數字，移到下一列
+                if (sudokuBoard[row][col] !== 0) return solveSudoku(row, col + 1);
+                
+                // 隨機生成數字順序
+                const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+                shuffleArray(numbers);
+                
+                // 嘗試每個數字
+                for (let num of numbers) {
+                    if (isValidMove(row, col, num)) {
+                        sudokuBoard[row][col] = num;
+                        
+                        if (solveSudoku(row, col + 1)) {
+                            return true;
+                        }
+                        
+                        // 回溯
+                        sudokuBoard[row][col] = 0;
+                    }
+                }
+                
+                return false;
+            }
+            
+            // 洗牌陣列
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+            
+            // 檢查移動是否有效
+            function isValidMove(row, col, num) {
+                // 檢查行
+                for (let c = 0; c < 9; c++) {
+                    if (sudokuBoard[row][c] === num) return false;
+                }
+                
+                // 檢查列
+                for (let r = 0; r < 9; r++) {
+                    if (sudokuBoard[r][col] === num) return false;
+                }
+                
+                // 檢查3x3宮格
+                const startRow = Math.floor(row / 3) * 3;
+                const startCol = Math.floor(col / 3) * 3;
+                
+                for (let r = startRow; r < startRow + 3; r++) {
+                    for (let c = startCol; c < startCol + 3; c++) {
+                        if (sudokuBoard[r][c] === num) return false;
+                    }
+                }
+                
+                return true;
+            }
+            
+            // 更新顯示
+            function updateDisplay() {
+                for (let row = 0; row < 9; row++) {
+                    for (let col = 0; col < 9; col++) {
+                        const cell = document.querySelector(
+                            `.sudoku-cell[data-row="${row}"][data-col="${col}"]`
+                        );
+                        
+                        const value = sudokuBoard[row][col];
+                        
+                        // 清除之前的類別
+                        cell.classList.remove('fixed', 'user-input', 'error');
+                        
+                        if (value === 0) {
+                            cell.textContent = '';
+                        } else {
+                            cell.textContent = value;
+                            
+                            // 如果是初始板上的數字
+                            if (initialBoard[row][col] !== 0) {
+                                cell.classList.add('fixed');
+                            } else {
+                                cell.classList.add('user-input');
+                                
+                                // 檢查是否錯誤
+                                if (value !== solutionBoard[row][col]) {
+                                    cell.classList.add('error');
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // 更新錯誤計數
+                updateMistakesCount();
+            }
+            
+            // 更新錯誤計數
+            function updateMistakesCount() {
+                let count = 0;
+                for (let row = 0; row < 9; row++) {
+                    for (let col = 0; col < 9; col++) {
+                        if (sudokuBoard[row][col] !== 0 && 
+                            sudokuBoard[row][col] !== solutionBoard[row][col]) {
+                            count++;
+                        }
+                    }
+                }
+                mistakes = count;
+                mistakesElement.textContent = mistakes;
+            }
+            
+            // 開始計時器
+            function startTimer() {
+                if (timerInterval) clearInterval(timerInterval);
+                
+                seconds = 0;
+                updateTimerDisplay();
+                
+                timerInterval = setInterval(() => {
+                    seconds++;
+                    updateTimerDisplay();
+                }, 1000);
+                
+                gameStarted = true;
+            }
+            
+            // 更新計時器顯示
+            function updateTimerDisplay() {
+                const minutes = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+            
+            // 輸入數字
+            function inputNumber(num) {
+                if (!selectedCell || initialBoard[selectedCell.row][selectedCell.col] !== 0) return;
+                
+                sudokuBoard[selectedCell.row][selectedCell.col] = num;
+                updateDisplay();
+                
+                // 檢查是否完成遊戲
+                checkGameCompletion();
+            }
+            
+            // 清除選中的格子
+            function clearSelectedCell() {
+                if (!selectedCell || initialBoard[selectedCell.row][selectedCell.col] !== 0) return;
+                
+                sudokuBoard[selectedCell.row][selectedCell.col] = 0;
+                updateDisplay();
+            }
+            
+            // 檢查遊戲是否完成
+            function checkGameCompletion() {
+                for (let row = 0; row < 9; row++) {
+                    for (let col = 0; col < 9; col++) {
+                        if (sudokuBoard[row][col] !== solutionBoard[row][col]) {
+                            return false;
+                        }
+                    }
+                }
+                
+                // 遊戲完成
+                clearInterval(timerInterval);
+                setTimeout(() => {
+                    alert(`恭喜！你完成了數獨遊戲！\n時間: ${timerElement.textContent}\n錯誤次數: ${mistakes}`);
+                }, 100);
+                
+                return true;
+            }
+            
+            // 提供提示
+            function provideHint() {
+                if (!selectedCell) {
+                    alert('請先選擇一個格子以獲得提示！');
+                    return;
+                }
+                
+                const { row, col } = selectedCell;
+                
+                if (initialBoard[row][col] !== 0) {
+                    alert('這個格子已經有數字了！');
+                    return;
+                }
+                
+                if (sudokuBoard[row][col] === solutionBoard[row][col]) {
+                    alert('這個格子已經正確了！');
+                    return;
+                }
+                
+                // 填入正確答案
+                sudokuBoard[row][col] = solutionBoard[row][col];
+                updateDisplay();
+                
+                // 檢查是否完成遊戲
+                checkGameCompletion();
+            }
+            
+            // 檢查答案
+            function checkSolution() {
+                let hasErrors = false;
+                
+                for (let row = 0; row < 9; row++) {
+                    for (let col = 0; col < 9; col++) {
+                        if (sudokuBoard[row][col] !== 0 && 
+                            sudokuBoard[row][col] !== solutionBoard[row][col]) {
+                            hasErrors = true;
+                        }
+                    }
+                }
+                
+                if (hasErrors) {
+                    alert('還有一些錯誤，請繼續檢查！');
+                } else {
+                    alert('目前為止都正確！繼續加油！');
+                }
+            }
+            
+            // 顯示解答
+            function showSolution() {
+                if (!confirm('確定要顯示解答嗎？這將結束當前遊戲。')) return;
+                
+                // 填入所有解答
+                for (let row = 0; row < 9; row++) {
+                    for (let col = 0; col < 9; col++) {
+                        sudokuBoard[row][col] = solutionBoard[row][col];
+                    }
+                }
+                
+                updateDisplay();
+                clearInterval(timerInterval);
+                alert('已顯示完整解答！');
+            }
+            
+            // 開始新遊戲
+            function startNewGame() {
+                selectedCell = null;
+                generateSudoku();
+                updateDisplay();
+                startTimer();
+                
+                // 移除高亮
+                const highlightedCells = document.querySelectorAll('.highlight');
+                highlightedCells.forEach(cell => cell.classList.remove('highlight'));
+            }
+            
+            // 事件監聽器
+            easyBtn.addEventListener('click', () => {
+                difficulty = 'easy';
+                startNewGame();
+            });
+            
+            mediumBtn.addEventListener('click', () => {
+                difficulty = 'medium';
+                startNewGame();
+            });
+            
+            hardBtn.addEventListener('click', () => {
+                difficulty = 'hard';
+                startNewGame();
+            });
+            
+            newGameBtn.addEventListener('click', startNewGame);
+            
+            hintBtn.addEventListener('click', provideHint);
+            
+            checkBtn.addEventListener('click', checkSolution);
+            
+            solveBtn.addEventListener('click', showSolution);
+            
+            clearBtn.addEventListener('click', clearSelectedCell);
+            
+            numButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const num = parseInt(button.textContent);
+                    inputNumber(num);
+                });
+            });
+            
+            // 鍵盤輸入支援
+            document.addEventListener('keydown', (e) => {
+                if (!selectedCell) return;
+                
+                const key = e.key;
+                
+                if (key >= '1' && key <= '9') {
+                    inputNumber(parseInt(key));
+                } else if (key === 'Backspace' || key === 'Delete' || key === '0') {
+                    clearSelectedCell();
+                } else if (key === 'ArrowUp' && selectedCell.row > 0) {
+                    selectCell(selectedCell.row - 1, selectedCell.col);
+                } else if (key === 'ArrowDown' && selectedCell.row < 8) {
+                    selectCell(selectedCell.row + 1, selectedCell.col);
+                } else if (key === 'ArrowLeft' && selectedCell.col > 0) {
+                    selectCell(selectedCell.row, selectedCell.col - 1);
+                } else if (key === 'ArrowRight' && selectedCell.col < 8) {
+                    selectCell(selectedCell.row, selectedCell.col + 1);
+                }
+            });
+            
+            // 初始化遊戲
+            initGame();
+        });
+    </script>
+</body>
+</html>
