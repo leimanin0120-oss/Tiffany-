@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>黑色背景貪食蛇遊戲</title>
+    <title>Tiffany - 遊戲平台</title>
     <style>
         * {
             margin: 0;
@@ -15,29 +15,155 @@
         body {
             background-color: #0a0a0a;
             color: #f0f0f0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
             min-height: 100vh;
             padding: 20px;
         }
         
         .header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+            border-radius: 15px;
+            border: 1px solid #333;
         }
         
         h1 {
-            color: #4CAF50;
-            margin-bottom: 8px;
-            font-size: 2.5rem;
-            text-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+            color: #6a0dad;
+            margin-bottom: 10px;
+            font-size: 3rem;
+            text-shadow: 0 0 15px rgba(106, 13, 173, 0.7);
+            letter-spacing: 2px;
         }
         
         .subtitle {
             color: #aaa;
+            font-size: 1.2rem;
+        }
+        
+        .games-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .games-category {
+            margin-bottom: 40px;
+        }
+        
+        .category-header {
+            display: flex;
+            align-items: center;
             margin-bottom: 20px;
+            padding: 15px 20px;
+            background: linear-gradient(90deg, #1a1a1a 0%, #2a2a2a 100%);
+            border-radius: 10px;
+            border-left: 5px solid #6a0dad;
+        }
+        
+        .category-title {
+            font-size: 1.8rem;
+            color: #6a0dad;
+            margin-right: 15px;
+        }
+        
+        .category-count {
+            background-color: #6a0dad;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 0 10px;
+        }
+        
+        .game-card {
+            background-color: #111;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid #333;
+            cursor: pointer;
+        }
+        
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(106, 13, 173, 0.3);
+            border-color: #6a0dad;
+        }
+        
+        .game-image {
+            width: 100%;
+            height: 150px;
+            background-color: #222;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6a0dad;
+            font-size: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .game-image::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 0%, rgba(106, 13, 173, 0.1) 100%);
+        }
+        
+        .game-info {
+            padding: 15px;
+        }
+        
+        .game-name {
+            color: #fff;
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+        
+        .game-description {
+            color: #aaa;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        
+        .play-button {
+            display: inline-block;
+            background-color: #6a0dad;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            font-size: 0.9rem;
+        }
+        
+        .play-button:hover {
+            background-color: #5a0cad;
+        }
+        
+        .snake-game-section {
+            background-color: #111;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 40px;
+            border: 1px solid #333;
+        }
+        
+        .section-title {
+            color: #6a0dad;
+            font-size: 2rem;
+            margin-bottom: 20px;
+            text-align: center;
         }
         
         .game-container {
@@ -47,9 +173,10 @@
             gap: 20px;
             max-width: 800px;
             width: 100%;
+            margin: 0 auto;
         }
         
-        .game-info {
+        .game-info-panel {
             display: flex;
             justify-content: space-between;
             width: 100%;
@@ -71,7 +198,7 @@
         }
         
         .info-value {
-            color: #4CAF50;
+            color: #6a0dad;
             font-size: 1.8rem;
             font-weight: bold;
         }
@@ -110,7 +237,7 @@
         }
         
         button:hover {
-            background-color: #4CAF50;
+            background-color: #6a0dad;
             transform: translateY(-2px);
         }
         
@@ -119,11 +246,11 @@
         }
         
         #startBtn {
-            background-color: #4CAF50;
+            background-color: #6a0dad;
         }
         
         #startBtn:hover {
-            background-color: #3d8b40;
+            background-color: #5a0cad;
         }
         
         #resetBtn {
@@ -145,7 +272,7 @@
         }
         
         .instructions h3 {
-            color: #4CAF50;
+            color: #6a0dad;
             margin-bottom: 10px;
         }
         
@@ -183,7 +310,7 @@
         }
         
         .mobile-btn:active {
-            background-color: #4CAF50;
+            background-color: #6a0dad;
         }
         
         .up-btn {
@@ -206,8 +333,22 @@
             grid-row: 2;
         }
         
+        @media (max-width: 768px) {
+            .games-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .category-title {
+                font-size: 1.5rem;
+            }
+        }
+        
         @media (max-width: 650px) {
-            .game-info {
+            .game-info-panel {
                 flex-direction: column;
                 gap: 15px;
             }
@@ -225,63 +366,320 @@
         }
         
         @media (max-width: 480px) {
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+            
             h1 {
-                font-size: 2rem;
+                font-size: 1.8rem;
             }
             
             .info-value {
                 font-size: 1.5rem;
+            }
+            
+            .games-container {
+                padding: 0 5px;
             }
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>黑色貪食蛇</h1>
-        <p class="subtitle">吃到紅色蘋果會讓蛇變長！</p>
+        <h1>Tiffany</h1>
+        <p class="subtitle">精選遊戲平台 - 探索各種有趣遊戲</p>
     </div>
     
-    <div class="game-container">
-        <div class="game-info">
-            <div class="info-box">
-                <div class="info-label">分數</div>
-                <div id="score" class="info-value">0</div>
+    <div class="games-container">
+        <!-- 動作遊戲分類 -->
+        <div class="games-category">
+            <div class="category-header">
+                <h2 class="category-title">動作遊戲</h2>
+                <span class="category-count">8款遊戲</span>
             </div>
-            <div class="info-box">
-                <div class="info-label">長度</div>
-                <div id="length" class="info-value">3</div>
-            </div>
-            <div class="info-box">
-                <div class="info-label">狀態</div>
-                <div id="status" class="info-value">準備中</div>
+            <div class="games-grid">
+                <div class="game-card" onclick="playGame('snake')">
+                    <div class="game-image" style="background-color: #1a1a1a;">🐍</div>
+                    <div class="game-info">
+                        <h3 class="game-name">經典貪食蛇</h3>
+                        <p class="game-description">控制蛇吃蘋果，避免撞牆或自己</p>
+                        <a href="#snake-game" class="play-button">開始遊戲</a>
+                    </div>
+                </div>
+                
+                <div class="game-card">
+                    <div class="game-image" style="background-color: #2a1a1a;">👾</div>
+                    <div class="game-info">
+                        <h3 class="game-name">太空侵略者</h3>
+                        <p class="game-description">經典射擊遊戲，保衛地球</p>
+                        <a href="#" class="play-button">即將推出</a>
+                    </div>
+                </div>
+                
+                <div class="game-card">
+                    <div class="game-image" style="background-color: #1a2a1a;">🏃</div>
+                    <div class="game-info">
+                        <h3 class="game-name">跑酷冒險</h3>
+                        <p class="game-description">無限奔跑，跳躍障礙物</p>
+                        <a href="#" class="play-button">即將推出</a>
+                    </div>
+                </div>
+                
+                <div class="game-card">
+                    <div class="game-image" style="background-color: #1a1a2a;">⚔️</div>
+                    <div class="game-info">
+                        <h3 class="game-name">武士之戰</h3>
+                        <p class="game-description">刀劍對決，成為最強武士</p>
+                        <a href="#" class="play-button">即將推出</a>
+                    </div>
+                </div>
+                
+                <div class="game-card">
+                    <div class="game-image" style="background-color: #2a2a1a;">🚀</div>
+                    <div class="game-info">
+                        <h3 class="game-name">火箭飛行</h3>
+                        <p class="game-description">操控火箭穿越障礙物</p>
+                        <a href="#" class="play-button">即將推出</a>
+                    </div>
+                </div>
+                
+                <div class="game-card">
+                    <div class="game-image" style="background-color: #1a2a2a;">🧱</div>
+                    <div class="game-info">
+                        <h3 class="game-name">方塊破壞者</h3>
+                        <p class="game-description">打磚塊經典遊戲</p>
+                        <a href="#" class="play-button">即將推出</a>
+                    </div>
+                </div>
+                
+                <div class="game-card">
+                    <div class="game-image" style="background-color: #2a1a2a;">🎯</div>
+                    <div class="game-info">
+                        <h3 class="game-name">目標射擊</h3>
+                        <p class="game-description">精準射擊訓練遊戲</p>
+                        <a href="#" class="play-button">即將推出</a>
+                    </div>
+                </div>
+                
+                <div class="game-card">
+                    <div class="game-image" style="background-color: #2a2a2a;">🤖</div>
+                    <div class="game-info">
+                        <h3 class="game-name">機器人戰役</h3>
+                        <p class="game-description">機器人對戰遊戲</p>
+                        <a href="#" class="play-button">即將推出</a>
+                    </div>
+                </div>
             </div>
         </div>
         
-        <canvas id="gameCanvas" width="600" height="600"></canvas>
-        
-        <div class="controls">
-            <div class="buttons">
-                <button id="startBtn">開始遊戲</button>
-                <button id="resetBtn">重新開始</button>
+        <!-- 益智遊戲分類 -->
+        <div class="games-category">
+            <div class="category-header">
+                <h2 class="category-title">益智遊戲</h2>
+                <span class="category-count">6款遊戲</span>
             </div>
-            
-            <div class="mobile-controls">
-                <button class="mobile-btn up-btn">↑</button>
-                <button class="mobile-btn left-btn">←</button>
-                <button class="mobile-btn down-btn">↓</button>
-                <button class="mobile-btn right-btn">→</button>
+            <div class="games-grid">
+                <div class="game-card">
+                    <div class="game-image" style="background-color: #1a1a2a;">🧩</div>
+                    <div class="game-info">
+                        <h3 class="game-name">拼圖挑戰</h3>
+                        <p class="game-description">完成各種難度的拼圖</p>
+                        <a href="#" class="play-button">即將推出</a>
+                    </div>
+                </div>
+                
+                <div class="game-card">
+                    <div class="game-image" style="background-color: #1a2a1a;">🔢</div>
+                    <div class="game-info">
+                        <h3 class="game-name">數字謎題</h3>
+                        <p class="game-description">數學邏輯解謎遊戲</p>
+                        <a href="#" class="play-button">即將推出</a>
+                    </div>
+                </div>
+                
+                <div class="game-card">
+                    <div class="game-image" style="background-color: #2a1a1a;">🔍</div>
+                    <div class="game-info">
+                        <h3 class="game-name">找不同</h3>
+                        <p class="game-description">找出兩張圖片的不同之處</p>
+                        <a href="#" class="play-button">即將推出</a>
+                    </div>
+                </div>
+                
+                <div class="game-card">
+                    <div class="game-image" style="background-color: #2a2a1a;">🧠</div>
+                    <div class="game-info">
+                        <h3 class="game-name">記憶大考驗</h3>
+                        <p class="game-description">測試你的記憶力</p>
+                        <a href="#" class="play-button">即將推出</a>
+                    </div>
+                </div>
+                
+                <div class="game-card">
+                    <div class="game-image" style="background-color: #1a2a2a;">♟️</div>
+                    <div class="game-info">
+                        <h3 class="game-name">國際象棋</h3>
+                        <p class="game-description">經典棋類遊戲</p>
+                        <a href="#" class="play-button">即將推出</a>
+                    </div>
+                </div>
+                
+                <div class="game-card">
+                    <div class="game-image" style="background-color: #2a1a2a;">🧩</div>
+                    <div class="game-info">
+                        <h3 class="game-name">連連看</h3>
+                        <p class="game-description">連接相同圖案的遊戲</p>
+                        <a href="#" class="play-button">即將推出</a>
+                    </div>
+                </div>
             </div>
         </div>
         
-        <div class="instructions">
-            <h3>遊戲說明</h3>
-            <ul>
-                <li>使用鍵盤方向鍵（↑ ↓ ← →）控制蛇的移動方向</li>
-                <li>在移動設備上可以使用螢幕上的方向按鈕</li>
-                <li>吃到紅色蘋果可以增加分數並讓蛇變長</li>
-                <li>避免撞到牆壁或自己的身體</li>
-                <li>遊戲會隨著分數增加而加快速度</li>
-            </ul>
+        <!-- 休閒遊戲分類 -->
+        <div class="games-category">
+            <div class="category-header">
+                <h2 class="category-title">休閒遊戲</h2>
+                <span class="category-count">5款遊戲</span>
+            </div>
+            <div class="games-grid">
+                <div class="game-card">
+                    <div class="game-image" style="background-color: #1a2a1a;">🎣</div>
+                    <div class="game-info">
+                        <h3 class="game-name">釣魚大師</h3>
+                        <p class="game-description">休閒釣魚模擬遊戲</p>
+                        <a href="#" class="play-button">即將推出</a>
+                    </div>
+                </div>
+                
+                <div class="game-card">
+                    <div class="game-image" style="background-color: #2a1a1a;">🍳</div>
+                    <div class="game-info">
+                        <h3 class="game-name">廚師模擬</h3>
+                        <p class="game-description">經營你的餐廳</p>
+                        <a href="#" class="play-button">即將推出</a>
+                    </div>
+                </div>
+                
+                <div class="game-card">
+                    <div class="game-image" style="background-color: #1a1a2a;">🌼</div>
+                    <div class="game-info">
+                        <h3 class="game-name">花園設計</h3>
+                        <p class="game-description">設計美麗的花園</p>
+                        <a href="#" class="play-button">即將推出</a>
+                    </div>
+                </div>
+                
+                <div class="game-card">
+                    <div class="game-image" style="background-color: #2a2a1a;">🐱</div>
+                    <div class="game-info">
+                        <h3 class="game-name">貓咪咖啡廳</h3>
+                        <p class="game-description">經營貓咪咖啡店</p>
+                        <a href="#" class="play-button">即將推出</a>
+                    </div>
+                </div>
+                
+                <div class="game-card">
+                    <div class="game-image" style="background-color: #1a2a2a;">🎨</div>
+                    <div class="game-info">
+                        <h3 class="game-name">繪圖大師</h3>
+                        <p class="game-description">創意繪圖遊戲</p>
+                        <a href="#" class="play-button">即將推出</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 冒險遊戲分類 -->
+        <div class="games-category">
+            <div class="category-header">
+                <h2 class="category-title">冒險遊戲</h2>
+                <span class="category-count">4款遊戲</span>
+            </div>
+            <div class="games-grid">
+                <div class="game-card">
+                    <div class="game-image" style="background-color: #1a1a2a;">🗺️</div>
+                    <div class="game-info">
+                        <h3 class="game-name">神秘島嶼</h3>
+                        <p class="game-description">探索未知島嶼的冒險</p>
+                        <a href="#" class="play-button">即將推出</a>
+                    </div>
+                </div>
+                
+                <div class="game-card">
+                    <div class="game-image" style="background-color: #2a1a1a;">🏰</div>
+                    <div class="game-info">
+                        <h3 class="game-name">城堡探險</h3>
+                        <p class="game-description">探索古老城堡的秘密</p>
+                        <a href="#" class="play-button">即將推出</a>
+                    </div>
+                </div>
+                
+                <div class="game-card">
+                    <div class="game-image" style="background-color: #1a2a1a;">🌋</div>
+                    <div class="game-info">
+                        <h3 class="game-name">火山冒險</h3>
+                        <p class="game-description">火山探險之旅</p>
+                        <a href="#" class="play-button">即將推出</a>
+                    </div>
+                </div>
+                
+                <div class="game-card">
+                    <div class="game-image" style="background-color: #2a2a1a;">🚢</div>
+                    <div class="game-info">
+                        <h3 class="game-name">海盜傳奇</h3>
+                        <p class="game-description">成為傳奇海盜船長</p>
+                        <a href="#" class="play-button">即將推出</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 貪食蛇遊戲區域 -->
+        <div id="snake-game" class="snake-game-section">
+            <h2 class="section-title">經典貪食蛇遊戲</h2>
+            <div class="game-container">
+                <div class="game-info-panel">
+                    <div class="info-box">
+                        <div class="info-label">分數</div>
+                        <div id="score" class="info-value">0</div>
+                    </div>
+                    <div class="info-box">
+                        <div class="info-label">長度</div>
+                        <div id="length" class="info-value">3</div>
+                    </div>
+                    <div class="info-box">
+                        <div class="info-label">狀態</div>
+                        <div id="status" class="info-value">準備中</div>
+                    </div>
+                </div>
+                
+                <canvas id="gameCanvas" width="600" height="600"></canvas>
+                
+                <div class="controls">
+                    <div class="buttons">
+                        <button id="startBtn">開始遊戲</button>
+                        <button id="resetBtn">重新開始</button>
+                    </div>
+                    
+                    <div class="mobile-controls">
+                        <button class="mobile-btn up-btn">↑</button>
+                        <button class="mobile-btn left-btn">←</button>
+                        <button class="mobile-btn down-btn">↓</button>
+                        <button class="mobile-btn right-btn">→</button>
+                    </div>
+                </div>
+                
+                <div class="instructions">
+                    <h3>遊戲說明</h3>
+                    <ul>
+                        <li>使用鍵盤方向鍵（↑ ↓ ← →）控制蛇的移動方向</li>
+                        <li>在移動設備上可以使用螢幕上的方向按鈕</li>
+                        <li>吃到紅色蘋果可以增加分數並讓蛇變長</li>
+                        <li>避免撞到牆壁或自己的身體</li>
+                        <li>遊戲會隨著分數增加而加快速度</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -315,6 +713,15 @@
         const downBtn = document.querySelector('.down-btn');
         const leftBtn = document.querySelector('.left-btn');
         const rightBtn = document.querySelector('.right-btn');
+        
+        // 遊戲切換功能
+        function playGame(gameName) {
+            if (gameName === 'snake') {
+                document.getElementById('snake-game').scrollIntoView({ 
+                    behavior: 'smooth' 
+                });
+            }
+        }
         
         // 初始化遊戲
         function initGame() {
@@ -392,11 +799,11 @@
             snake.forEach((segment, index) => {
                 // 蛇頭用不同顏色
                 if (index === 0) {
-                    ctx.fillStyle = '#4CAF50'; // 蛇頭顏色
+                    ctx.fillStyle = '#6a0dad'; // 蛇頭顏色
                 } else {
-                    // 蛇身體用漸變綠色
+                    // 蛇身體用漸變紫色
                     const colorValue = Math.max(100, 255 - index * 5);
-                    ctx.fillStyle = `rgb(76, ${colorValue}, 80)`;
+                    ctx.fillStyle = `rgb(106, 13, ${colorValue})`;
                 }
                 
                 // 繪製圓角矩形讓蛇看起來更平滑
